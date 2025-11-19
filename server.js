@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-import { promos } from './dataPromo';
+const { promos } = require('./dataPromo');
 
 const app = express();
 const PORT = 3000;
@@ -49,17 +49,29 @@ app.post('/login', (req, res) => {
 app.get('/getDataPromo', (req, res) => {
     const category = req.query.category;
 
+
     try {
         const getDataByCategory = promos.filter(promo => {return promo.category == category})
+
+        // validasi category
+        if (getDataByCategory.length == 0) {
+            return res.json({
+                message: 'kategori tersebut tidak ada',
+                isGetdata: false
+            })
+        }
+
         return res.json({
                 message: 'data berhasil diambil',
+                isGetdata: true,
                 dataPromo: getDataByCategory
             })
         
     } catch (error) {
         return res.json({
                 message: 'data gagal didapat, ada kesalahan',
-                errorMessage: error
+                isGetdata: false,
+                errorMessaage: error
             })
     }
 })
