@@ -46,25 +46,80 @@ app.post('/login', (req, res) => {
 })
 
 // path get data promo
+// app.get('/getDataPromo', (req, res) => {
+//     const category = req.query.category;
+
+
+//     try {
+//         const getDataByCategory = promos.filter(promo => {return promo.category == category})
+
+//         // validasi category
+//         if (getDataByCategory.length == 0) {
+//             return res.json({
+//                 message: 'kategori tersebut tidak ada',
+//                 isGetdata: false
+//             })
+//         }
+
+//         return res.json({
+//                 message: 'data berhasil diambil',
+//                 isGetdata: true,
+//                 dataPromo: getDataByCategory
+//             })
+        
+//     } catch (error) {
+//         return res.json({
+//                 message: 'data gagal didapat, ada kesalahan',
+//                 isGetdata: false,
+//                 errorMessaage: error
+//             })
+//     }
+// })
+
 app.get('/getDataPromo', (req, res) => {
     const category = req.query.category;
-
-
+    
     try {
-        const getDataByCategory = promos.filter(promo => {return promo.category == category})
+        // Validasi jika query category tidak ada
+        if (!category) {
+            return res.json({
+                message: 'Kategori harus diisi',
+                isGetdata: false
+            });
+        }
 
-        // validasi category
-        if (getDataByCategory.length == 0) {
+        // pecah category menjadi array
+        const categories = category.split('-').slice(0, 3);
+
+        // quota untuk setiap kategori
+        const quotas = [4, 3, 1];
+
+        let finalDataPromo = [];
+
+        // Loop berdasarkan kategori 
+        categories.forEach((categoryName, index) => {
+            // Ambil data dari "database" promos yang kategorinya cocok
+            const filtered = promos.filter(p => p.category === categoryName);
+            
+            // Ambil data sesuai jatah (quota) berdasarkan urutan index
+            const limitedData = filtered.slice(0, quotas[index]);
+            
+            // Gabungkan ke array utama
+            finalDataPromo = [...finalDataPromo, ...limitedData];
+        });
+
+        // validasi hasil filter
+        if (finalDataPromo.length === 0) {
             return res.json({
                 message: 'kategori tersebut tidak ada',
                 isGetdata: false
-            })
+            });
         }
 
         return res.json({
                 message: 'data berhasil diambil',
                 isGetdata: true,
-                dataPromo: getDataByCategory
+                dataPromo: finalDataPromo
             })
         
     } catch (error) {
